@@ -7,9 +7,17 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: ['@nuxt/image', '@nuxt/eslint'],
+  modules: ['@nuxt/image', '@nuxt/eslint', '@nuxtjs/supabase'],
 
   css: ['~/assets/css/main.css'],
+
+  // Supabase backend. URL + key are read from SUPABASE_URL / SUPABASE_KEY in
+  // .env (see .env.example). `redirect: false` keeps the whole site public for
+  // now — Phase 5 adds /admin-only auth once the login page exists.
+  supabase: {
+    redirect: false,
+    types: '~/types/database.types.ts',
+  },
 
   // Tailwind CSS v4 is wired in as a Vite plugin (no tailwind.config.js — the
   // theme lives in app/assets/css/main.css via @theme).
