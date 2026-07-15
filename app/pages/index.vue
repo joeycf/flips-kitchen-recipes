@@ -1,6 +1,6 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-10">
-    <header class="max-w-[640px]">
+  <main class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-8">
+    <header class="mb-7 max-w-[640px]">
       <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-clay">
         Filipino · Thai · Japanese
       </p>
@@ -15,27 +15,33 @@
       </p>
     </header>
 
-    <div class="mt-8 flex flex-wrap gap-3">
-      <NuxtLink
-        to="/recipes/chicken-adobo"
-        class="inline-flex items-center gap-2 rounded-field bg-clay px-4 py-2.5 font-semibold text-[#fff7ef] shadow-clay transition hover:bg-clay-deep"
-      >
-        Browse a recipe
-      </NuxtLink>
-      <NuxtLink
-        to="/admin"
-        class="inline-flex items-center gap-2 rounded-field border border-line bg-paper px-4 py-2.5 font-semibold text-ink transition hover:bg-cream"
-      >
-        Admin
-      </NuxtLink>
+    <!-- Phase 4 adds the search bar + ingredient filter chips here, over the same fetch. -->
+
+    <div v-if="error" class="rounded-card border border-line bg-paper p-8 text-center">
+      <p class="text-ink-soft">Something went wrong loading the recipes. Please try again.</p>
     </div>
 
-    <p class="mt-10 font-mono text-xs text-ink-faint">
-      Scaffold ready · home &amp; /recipes/** render with ISR · /admin is client-rendered.
-    </p>
+    <EmptyState v-else-if="!recipes || recipes.length === 0" />
+
+    <template v-else>
+      <p class="mb-4 text-[14px] text-[#8A7C6E]">
+        <b class="font-semibold text-ink">{{ recipes.length }}</b>
+        {{ recipes.length === 1 ? 'recipe' : 'recipes' }}
+      </p>
+      <RecipeGrid :recipes="recipes" />
+    </template>
   </main>
 </template>
 
 <script setup lang="ts">
-useHead({ title: "Flip's Kitchen — family recipes" })
+const { data: recipes, error } = await useRecipes()
+
+useSeoMeta({
+  title: "Flip's Kitchen — family recipes",
+  description:
+    'A little collection of Filipino, Thai and Japanese dishes we cook on repeat — worth writing down and passing on.',
+  ogTitle: "Flip's Kitchen — family recipes",
+  ogDescription: 'Filipino, Thai and Japanese recipes from our family table.',
+  ogType: 'website',
+})
 </script>

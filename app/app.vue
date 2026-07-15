@@ -3,10 +3,13 @@
     <!-- Subtle paper grain overlay, per the design reference (fixed, non-interactive). -->
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-0 z-0 opacity-[0.055] mix-blend-multiply"
+      data-noprint
+      class="pointer-events-none fixed inset-0 z-0 opacity-[0.055] mix-blend-multiply print:hidden"
       :style="grain"
     />
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 

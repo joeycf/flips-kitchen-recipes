@@ -86,3 +86,65 @@
     text-wrap: pretty;
   }
 }
+
+/*
+  Print — turn the on-screen recipe into a clean paper sheet. The detail page marks
+  screen-only chrome (header, action buttons, video embed, paper grain) with
+  `print:hidden` / `data-noprint`; these rules flatten and reflow what remains so the
+  title, meta, ingredients and numbered steps read well on paper.
+*/
+@media print {
+  [data-noprint] {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body {
+    color: #241f1a;
+  }
+
+  /* Use the full page width; drop the on-screen reading-column gutters. */
+  main {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* No motion or elevation on paper; make accent fills print as shown. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ingredients aside → plain block, no card chrome. */
+  aside {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  /* Keep each step / ingredient whole across a page break; don't orphan headings. */
+  li,
+  aside button {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  img {
+    max-width: 100% !important;
+  }
+}

@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 1 complete (scaffold builds clean on node-server + vercel presets). **Phase 2 (Supabase) prompt ready — see below.**
+> **Status:** Phase 2 complete (migration applied; RLS + storage bucket live; @nuxtjs/supabase wired). **Phase 3 (public pages) prompt ready — see below.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -261,30 +261,70 @@ local linking needed.)
 
 ### Phase 3 — Public recipe pages (incl. cook mode + print)
 
+Note: the DB starts empty, so this phase includes a seed file to paste in (like the migration)
+so the pages are visually testable before the Phase 5 admin form exists.
+
 ```
-Build the public pages using the layouts in the design/ folder.
+PHASE 3 — Public pages (list + detail) with cook mode & print
 
-Home: fetch recipes and render the responsive card grid (cuisine label, total time,
-difficulty, tag pills).
+Build the public recipe pages, implementing the layouts in design/ and using the typed
+useSupabaseClient() (typed against app/types/database.types.ts). The database has no rows yet,
+so also provide a seed (below) so the pages are testable.
 
-Recipe detail at /recipes/[slug]: hero image, meta strip, ingredients (joined from
-recipe_ingredients), numbered steps from the instructions JSONB, and — if youtube_url is
-present — an embedded video using lite-youtube-embed for performance. Use ISR. Add SEO with
-useSeoMeta and a schema.org/Recipe JSON-LD block for Google rich results. Use @nuxt/image for
-responsive, lazy-loaded, optimized images.
+Data fetching:
+- Fetch server-side with useAsyncData so pages render on the server and are cached by the ISR
+  route rules. Use the typed Supabase client.
+- Detail page: fetch the recipe AND its ingredients in ONE query via a nested select, e.g.
+  .from('recipes').select('*, recipe_ingredients(*)').eq('slug', slug).single(), ordering
+  ingredients by `position`.
+- Resolve recipes by their `slug` column (clean URLs like /recipes/chicken-adobo). The
+  scaffold's placeholder detail route is app/pages/recipes/[id].vue — rename/align it to a slug
+  param and query by slug. Return a proper 404 via createError when no recipe matches.
 
-Cook mode: add a "Cook mode" toggle. When on, request a Screen Wake Lock
-(navigator.wakeLock.request('screen')) so the device won't sleep, and switch to a focused
-large-text step-by-step view with minimal chrome. Re-acquire the wake lock on visibilitychange
-when the tab regains focus, release it when cook mode is turned off or the user navigates away,
-and degrade gracefully where unsupported (e.g. older iOS) by still showing the focused view
-without the lock.
+Home (/):
+- Fetch the card fields for all recipes (id, slug, title, description, cuisine, hero_image,
+  prep_minutes, cook_minutes, difficulty, tags) and render the responsive card grid from the
+  design. Build reusable components (e.g. RecipeCard, RecipeGrid) plus a composable for the
+  fetch. Handle the empty state (no recipes) with the design's empty state.
+- Phase 4 will add search + the ingredient filter here; structure the fetch/list so that's easy
+  to extend (it can later also select recipe_ingredients(name_key)).
 
-Print: add a "Print recipe" button that calls window.print(), plus an @media print stylesheet
-that hides nav, search, filters, animations, and the video; lays out title, meta
-(times/servings), ingredients, and numbered steps cleanly for paper; uses page-break-friendly
-rules; and keeps or shrinks the hero image sensibly to avoid wasting ink.
+Recipe detail (/recipes/[slug]):
+- Hero image, meta strip (prep/cook time, servings, difficulty, cuisine), ingredients list
+  (quantity + unit + name), numbered steps from the instructions JSONB, and — if youtube_url is
+  present — an embedded video via lite-youtube-embed. Where hero_image is null, show the design's
+  placeholder rather than a broken image.
+- SEO: useSeoMeta (title/description/og) + a schema.org/Recipe JSON-LD block for rich results.
+
+Images:
+- Use @nuxt/image (<NuxtImg>) for responsive, lazy-loaded images. Configure it for the Supabase
+  Storage domain so remote hero images can be optimized — add "<project-ref>.supabase.co" to
+  image.domains in nuxt.config. Handle null images with the placeholder.
+
+Cook mode (detail page):
+- A "Cook mode" toggle that requests a Screen Wake Lock (navigator.wakeLock.request('screen')) so
+  the device won't sleep, and switches to a focused large-text step-by-step view. Re-acquire the
+  lock on visibilitychange when the tab regains focus, release it on exit/navigation, and degrade
+  gracefully where unsupported (older iOS) by still showing the focused view.
+
+Print (detail page):
+- A "Print recipe" button (window.print()) plus an @media print stylesheet that hides nav, search,
+  animations, and the video; lays out title, meta, ingredients, and numbered steps cleanly for
+  paper; uses page-break-friendly rules; keeps/shrinks the hero sensibly.
+
+Seed for testing:
+- Add supabase/seed.sql with 2–3 sample recipes from the design (e.g. Chicken Adobo, Pad Thai),
+  each with a few recipe_ingredients and short instructions, so I can paste it into the SQL editor
+  and see the pages render. Make it easy to delete later.
+
+Verify: dev server renders the list and a detail page against the seed data; typecheck, lint, and
+the vercel-preset build all pass.
 ```
+
+**After Claude Code finishes:** paste `supabase/seed.sql` into the SQL Editor → Run (same flow as
+the migration), then `npm run dev` and open http://localhost:3000 to see the grid; click a card
+for the detail page, cook mode, and print. (Production ISR will also need SUPABASE_URL/SUPABASE_KEY
+in Vercel's env — handled in Phase 7.)
 
 ### Phase 4 — Search & ingredient filtering
 
