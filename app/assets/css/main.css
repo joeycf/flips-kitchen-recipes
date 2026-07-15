@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+/*
+  Keep the design reference export (design/ at the repo root) out of Tailwind's
+  automatic content scanning — it's a handoff reference, not application source.
+*/
+@source not "../../../design";
+
+/*
+  Warm & rustic design tokens.
+  Values are read verbatim from the Claude Design export in design/
+  (see "Handoff - Nuxt Build.dc.html").
+*/
+@theme {
+  /* ---- Colors: cream/off-white surfaces + terracotta (clay) accent ---- */
+  --color-cream: #faf4ea;
+  --color-paper: #fffdf9;
+  --color-line: #e8dfcf;
+
+  --color-ink: #2a241f;
+  --color-ink-soft: #6f6257;
+  --color-ink-faint: #9c8e80;
+
+  --color-clay: #bc5a39;
+  --color-clay-deep: #9e4a2e;
+  --color-clay-tint: #f3e3d9;
+
+  /* ---- Fonts: serif display + sans body/UI + mono labels ---- */
+  --font-display: 'Spectral', ui-serif, Georgia, serif;
+  --font-sans: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ---- Spacing scale: the design is built on a 4px rhythm (0.25rem base) ---- */
+  --spacing: 0.25rem;
+
+  /* Layout widths from the design → max-w-shell / max-w-read / max-w-sheet */
+  --container-shell: 1120px;
+  --container-read: 1000px;
+  --container-sheet: 760px;
+
+  /* ---- Radii → rounded-field / rounded-card / rounded-pill ---- */
+  --radius-field: 11px;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-card: 0 1px 2px rgb(60 40 20 / 0.04), 0 16px 30px -22px rgb(90 50 20 / 0.22);
+  --shadow-lift: 0 1px 2px rgb(60 40 20 / 0.05), 0 26px 44px -24px rgb(90 50 20 / 0.32);
+  --shadow-clay: 0 12px 24px -12px rgb(188 90 57 / 0.7);
+}
+
+/* Base page styling — mirrors the design export's global CSS. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--color-clay);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-clay-deep);
+  }
+
+  ::selection {
+    background: #f3d9c9;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}

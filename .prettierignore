@@ -1,0 +1,15 @@
+# Build artifacts
+.nuxt
+.output
+.nitro
+.cache
+.data
+dist
+.vercel
+node_modules
+
+# Lockfiles
+package-lock.json
+
+# Design reference export — leave untouched
+design

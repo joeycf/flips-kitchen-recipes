@@ -1,0 +1,36 @@
+# Nuxt / Nitro build artifacts
+.nuxt
+.output
+.nitro
+.cache
+.data
+
+# Dependencies
+node_modules
+
+# Static generation output
+dist
+
+# Vercel
+.vercel
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

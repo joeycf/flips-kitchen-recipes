@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #FAF4EA; color: #2A241F; font-family: 'Work Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #BC5A39; text-decoration: none; }
+  a:hover { color: #9E4A2E; text-decoration: underline; }
+  ::selection { background: #F3D9C9; }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  code { font-family: 'JetBrains Mono', monospace; }
+</style>
+</helmet>
+
+<div data-screen-label="Nuxt Handoff Spec" style="max-width: 880px; margin: 0 auto; padding: 40px 28px 120px; position: relative;">
+  <a href="Flip's Kitchen.dc.html" style="display: inline-flex; align-items: center; gap: 6px; font: 600 13px 'Work Sans'; color: #BC5A39; margin-bottom: 28px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Back to the prototype
+  </a>
+
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #BC5A39;">Developer handoff</div>
+  <h1 style="font: 600 clamp(30px, 5vw, 44px)/1.05 'Spectral', serif; letter-spacing: -0.02em; margin: 12px 0 14px;">Flip's Kitchen — Nuxt build guide</h1>
+  <p style="font: 400 17px/1.65 'Work Sans'; color: #6F6257; margin: 0; max-width: 62ch;">Component breakdown, the Tailwind theme, and the class recipes to rebuild the prototype in Nuxt 3. Every color, radius and font used in the design is tokenised below so the build stays 1:1 with what you've seen.</p>
+
+  <div style="height: 1px; background: #E8DFCF; margin: 34px 0;"></div>
+
+  <!-- STACK -->
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #BC5A39; margin-bottom: 10px;">01 — Stack &amp; structure</div>
+  <h2 style="font: 600 26px 'Spectral', serif; margin: 0 0 14px;">What to reach for</h2>
+  <p style="font: 400 15.5px/1.7 'Work Sans'; color: #3A322B; margin: 0 0 16px;">Nuxt 3 (SSR or SPA), Tailwind via <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">@nuxtjs/tailwindcss</code>, fonts via <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">@nuxtjs/google-fonts</code>, a Pinia store (or a <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">useRecipes</code> composable) for recipe data + filters, and <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">vuedraggable</code> (or <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">@vueuse/integrations/useSortable</code>) for the admin reordering.</p>
+  <pre style="background: #2A241F; color: #EDE3D3; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font: 400 12.5px/1.75 'JetBrains Mono', monospace; margin: 0 0 8px;"><code>app/
+├─ pages/
+│  ├─ index.vue                 → Home (grid + search + filters + states)
+│  ├─ recipes/[id].vue          → Recipe detail
+│  ├─ recipes/[id]/cook.vue     → Cook mode (full-screen, or a &lt;Teleport&gt; overlay)
+│  ├─ recipes/[id]/print.vue    → Print layout (or print CSS on detail)
+│  └─ admin/
+│     ├─ new.vue                → Create recipe
+│     └─ [id]/edit.vue          → Edit recipe
+├─ components/
+│  ├─ app/        AppHeader, BrandMark
+│  ├─ home/       SearchBar, FilterChips, RecipeGrid, RecipeCard,
+│  │             DifficultyDots, EmptyState, NoResultsState, SkeletonCard
+│  ├─ recipe/     MetaStrip, MetaTile, IngredientList, MethodSteps,
+│  │             VideoEmbed, RecipeActions
+│  ├─ cook/       CookStepper, CookChecklist, CookTopBar
+│  ├─ print/      PrintSheet
+│  └─ admin/      RecipeForm, IngredientRow, StepRow, TagInput,
+│                ImageUploader, GalleryUploader, DifficultyPicker
+├─ composables/   useRecipes.ts, useRecipeFilters.ts, useWakeLock.ts
+├─ stores/        recipes.ts (Pinia)
+└─ types/         recipe.ts</code></pre>
+
+  <div style="height: 1px; background: #E8DFCF; margin: 34px 0;"></div>
+
+  <!-- TOKENS -->
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #BC5A39; margin-bottom: 10px;">02 — Design tokens</div>
+  <h2 style="font: 600 26px 'Spectral', serif; margin: 0 0 8px;">Tailwind theme</h2>
+  <p style="font: 400 15.5px/1.7 'Work Sans'; color: #3A322B; margin: 0 0 16px;">Drop this into <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 2px 6px; border-radius: 6px;">tailwind.config.ts</code>. All class names in this doc assume these tokens.</p>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #FAF4EA;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">cream<br /><span style="color: #A8977E;">#FAF4EA</span></div></div>
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #FFFDF9; border-bottom: 1px solid #E8DFCF;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">paper<br /><span style="color: #A8977E;">#FFFDF9</span></div></div>
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #BC5A39;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">clay<br /><span style="color: #A8977E;">#BC5A39</span></div></div>
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #9E4A2E;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">clay-deep<br /><span style="color: #A8977E;">#9E4A2E</span></div></div>
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #F3E3D9;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">clay-tint<br /><span style="color: #A8977E;">#F3E3D9</span></div></div>
+    <div style="flex: 1 1 120px; border: 1px solid #E8DFCF; border-radius: 12px; overflow: hidden; background: #FFFDF9;"><div style="height: 46px; background: #2A241F;"></div><div style="padding: 8px 10px; font: 500 11px 'JetBrains Mono', monospace; color: #6F6257;">ink<br /><span style="color: #A8977E;">#2A241F</span></div></div>
+  </div>
+
+  <pre style="background: #2A241F; color: #EDE3D3; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font: 400 12.5px/1.75 'JetBrains Mono', monospace; margin: 0 0 8px;"><code>// tailwind.config.ts
+export default {
+  theme: {
+    extend: {
+      colors: {
+        cream:  '#FAF4EA',
+        paper:  '#FFFDF9',
+        line:   '#E8DFCF',
+        ink:    { DEFAULT: '#2A241F', soft: '#6F6257', faint: '#9C8E80' },
+        clay:   { DEFAULT: '#BC5A39', deep: '#9E4A2E', tint: '#F3E3D9' },
+      },
+      fontFamily: {
+        display: ['Spectral', 'ui-serif', 'serif'],       // headings
+        sans:    ['Work Sans', 'ui-sans-serif', 'system-ui'], // body / UI
+        mono:    ['JetBrains Mono', 'ui-monospace', 'monospace'], // labels
+      },
+      borderRadius: { card: '18px', pill: '999px', field: '11px' },
+      boxShadow: {
+        card:  '0 1px 2px rgba(60,40,20,.04), 0 16px 30px -22px rgba(90,50,20,.22)',
+        lift:  '0 1px 2px rgba(60,40,20,.05), 0 26px 44px -24px rgba(90,50,20,.32)',
+        clay:  '0 12px 24px -12px rgba(188,90,57,.7)',
+      },
+      maxWidth: { shell: '1120px', read: '1000px' },
+    },
+  },
+}</code></pre>
+  <p style="font: 400 12.5px 'Work Sans'; color: #9C8E80; margin: 4px 0 16px;">Set the page background once on <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">&lt;body class="bg-cream text-ink font-sans"&gt;</code>. Add the subtle paper grain as a fixed <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">feTurbulence</code> SVG overlay at <code style="font: 500 0.88em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">opacity-[.055] mix-blend-multiply pointer-events-none</code>.</p>
+
+  <pre style="background: #2A241F; color: #EDE3D3; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font: 400 12.5px/1.75 'JetBrains Mono', monospace; margin: 0 0 8px;"><code>// nuxt.config.ts
+googleFonts: {
+  families: { Spectral: [400,500,600,700], 'Work Sans': [400,500,600,700], 'JetBrains Mono': [400,500,600] },
+  display: 'swap',
+}</code></pre>
+
+  <div style="height: 1px; background: #E8DFCF; margin: 34px 0;"></div>
+
+  <!-- COMPONENTS -->
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #BC5A39; margin-bottom: 10px;">03 — Component breakdown</div>
+  <h2 style="font: 600 26px 'Spectral', serif; margin: 0 0 6px;">Inventory &amp; classes</h2>
+  <p style="font: 400 15.5px/1.7 'Work Sans'; color: #3A322B; margin: 0 0 22px;">Each block lists props and the Tailwind classes for the element that carries the look. Repeated primitives (buttons, chips) are factored out first.</p>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 0 0 12px; color: #2A241F;">Shared primitives</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">BaseButton</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257; margin-bottom: 8px;">Props: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">variant: 'clay' | 'ghost'</code>, <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">size</code>, <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">icon</code></div>
+    <div style="font: 400 12.5px/1.7 'JetBrains Mono', monospace; color: #4A4038; background: #F6EFE2; border-radius: 9px; padding: 10px 12px;">clay → <span style="color: #8A4E33;">inline-flex items-center gap-2 rounded-[11px] px-4 py-2.5 font-sans font-semibold text-[#FFF7EF] bg-clay hover:bg-clay-deep shadow-clay</span><br />ghost → <span style="color: #8A4E33;">... bg-paper text-ink border border-line hover:bg-cream hover:border-[#D9CCB6]</span></div>
+  </div>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">Chip / FilterChip</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257; margin-bottom: 8px;">Props: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">label</code>, <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">active</code>, <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">@toggle</code></div>
+    <div style="font: 400 12.5px/1.7 'JetBrains Mono', monospace; color: #4A4038; background: #F6EFE2; border-radius: 9px; padding: 10px 12px;"><span style="color: #8A4E33;">rounded-pill px-[15px] py-2 text-[13.5px] font-medium border transition</span><br />active → <span style="color: #8A4E33;">bg-clay text-[#FFF7EF] border-clay</span> · idle → <span style="color: #8A4E33;">bg-paper text-ink-soft border-line</span></div>
+  </div>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">DifficultyDots</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257; margin-bottom: 8px;">Props: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">level: 1–5</code> · renders 5 dots, first <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">level</code> filled clay.</div>
+    <div style="font: 400 12.5px/1.7 'JetBrains Mono', monospace; color: #4A4038; background: #F6EFE2; border-radius: 9px; padding: 10px 12px;">dot → <span style="color: #8A4E33;">w-1.5 h-1.5 rounded-full</span> · on <span style="color: #8A4E33;">bg-clay</span> / off <span style="color: #8A4E33;">bg-[#E4D9C6]</span> · label <span style="color: #8A4E33;">text-ink-faint text-xs</span></div>
+  </div>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 22px 0 12px; color: #2A241F;">Home</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">RecipeCard</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257; margin-bottom: 8px;">Props: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">recipe: Recipe</code> · emits <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">@open</code>. Photo, cuisine eyebrow, time, title, 2-line desc, dots + tags.</div>
+    <div style="font: 400 12.5px/1.7 'JetBrains Mono', monospace; color: #4A4038; background: #F6EFE2; border-radius: 9px; padding: 10px 12px;">card → <span style="color: #8A4E33;">flex flex-col rounded-card bg-paper border border-line overflow-hidden shadow-card hover:-translate-y-1 hover:shadow-lift transition text-left</span><br />photo → <span style="color: #8A4E33;">aspect-[4/3]</span> (real: <code style="background: none; color: #8A4E33;">&lt;NuxtImg&gt;</code> · placeholder: repeating-linear-gradient)<br />title → <span style="color: #8A4E33;">font-display font-semibold text-xl tracking-tight</span> · desc → <span style="color: #8A4E33;">text-[13.5px] text-ink-faint line-clamp-2</span></div>
+  </div>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">RecipeGrid</div>
+    <div style="font: 400 12.5px/1.7 'JetBrains Mono', monospace; color: #4A4038; background: #F6EFE2; border-radius: 9px; padding: 10px 12px;"><span style="color: #8A4E33;">grid gap-[22px] grid-cols-[repeat(auto-fill,minmax(min(100%,250px),1fr))]</span> — one class, no breakpoints needed.</div>
+  </div>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">SearchBar · FilterChips · states</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257;">SearchBar: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">v-model</code> bound to filter store. SkeletonCard uses <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">animate-[shimmer]</code> gradients. EmptyState / NoResultsState are centered <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">max-w-[440px]</code> blocks with a CTA — swap by <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">v-if</code> on <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">status</code> (loading / empty / no-results / grid).</div>
+  </div>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 22px 0 12px; color: #2A241F;">Recipe detail</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 600 15px 'JetBrains Mono', monospace; color: #BC5A39; margin-bottom: 4px;">MetaStrip · IngredientList · MethodSteps · VideoEmbed</div>
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257;">Two-column body without media queries: <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">flex flex-wrap gap-8</code>; aside <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">flex-[1_1_280px]</code>, method <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">flex-[2.4_1_440px]</code> → stacks on mobile automatically. Ingredient rows are toggle buttons (check state in local ref). Step number badge <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">w-9 h-9 rounded-xl bg-clay-tint text-clay font-display</code>. VideoEmbed: use <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">nuxt-lazy-youtube</code> or a click-to-load facade over an <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">&lt;iframe&gt;</code>.</div>
+  </div>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 22px 0 12px; color: #2A241F;">Cook mode</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257;"><b style="color: #2A241F;">CookStepper</b> — one step at a time, <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">font-display text-[clamp(28px,4.6vw,46px)]</code>, progress bar, big Back / Next buttons, swipe via <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">@vueuse/gesture</code>. <b style="color: #2A241F;">CookChecklist</b> — oversized tappable rows, checked state struck through. Toggle between them with a segmented control; expose the default via a prop. Call the Wake Lock API (<code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">useWakeLock</code>) on mount so the screen stays on.</div>
+  </div>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 22px 0 12px; color: #2A241F;">Print</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257;">PrintSheet is a <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">max-w-[760px]</code> white sheet. Tag chrome <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">class="print:hidden"</code>; the Print button calls <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">window.print()</code>. Add a <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">@media print</code> rule to flatten the sheet (no shadow/border/margins) and set <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">body{background:#fff}</code>.</div>
+  </div>
+
+  <h3 style="font: 600 17px 'Work Sans'; margin: 22px 0 12px; color: #2A241F;">Admin form</h3>
+  <div style="border: 1px solid #E8DFCF; border-radius: 14px; padding: 18px 20px; background: #FFFDF9; margin-bottom: 12px;">
+    <div style="font: 400 13.5px/1.6 'Work Sans'; color: #6F6257;">Sectioned cards (<code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">rounded-card bg-paper border border-line p-6</code>). <b style="color: #2A241F;">IngredientRow / StepRow</b> wrapped in <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">&lt;draggable&gt;</code>; the 6-dot handle is the drag grip; drop target highlights <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">bg-clay-tint border-clay</code>. <b style="color: #2A241F;">ImageUploader</b> — <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">&lt;input type=file&gt;</code> + drop zone, preview via <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">URL.createObjectURL</code>. TagInput adds on Enter. DifficultyPicker = 5 clickable dots.</div>
+  </div>
+
+  <div style="height: 1px; background: #E8DFCF; margin: 34px 0;"></div>
+
+  <!-- DATA + STATE -->
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #BC5A39; margin-bottom: 10px;">04 — Data &amp; state</div>
+  <h2 style="font: 600 26px 'Spectral', serif; margin: 0 0 14px;">The Recipe model + filter store</h2>
+  <pre style="background: #2A241F; color: #EDE3D3; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font: 400 12.5px/1.75 'JetBrains Mono', monospace; margin: 0 0 16px;"><code>// types/recipe.ts
+export interface Ingredient { qty: string; unit: string; name: string }
+export interface Step { text: string; photo?: string | null }
+export interface Recipe {
+  id: string
+  title: string
+  cuisine: 'Filipino' | 'Thai' | 'Japanese' | string
+  description: string
+  prep: number; cook: number; total: number   // minutes
+  servings: number
+  difficulty: 1 | 2 | 3 | 4 | 5
+  tags: string[]
+  hero?: string | null
+  gallery?: string[]
+  youtube?: string | null
+  ingredients: Ingredient[]
+  steps: Step[]
+}</code></pre>
+  <pre style="background: #2A241F; color: #EDE3D3; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font: 400 12.5px/1.75 'JetBrains Mono', monospace; margin: 0 0 8px;"><code>// composables/useRecipeFilters.ts
+const query = ref('')
+const activeChips = ref&lt;string[]&gt;([])
+
+const filtered = computed(() =&gt; recipes.value.filter(r =&gt; {
+  const q = query.value.trim().toLowerCase()
+  const inChips = !activeChips.value.length || activeChips.value.every(c =&gt;
+    r.tags.includes(c) || r.ingredients.some(i =&gt; i.name.toLowerCase().includes(c.toLowerCase())))
+  const inQ = !q || [r.title, r.cuisine, r.tags.join(' ')].join(' ').toLowerCase().includes(q)
+    || r.ingredients.some(i =&gt; i.name.toLowerCase().includes(q))
+  return inChips && inQ
+}))
+
+// status drives the Home view: 'loading' | 'empty' | 'no-results' | 'grid'</code></pre>
+  <p style="font: 400 13px/1.6 'Work Sans'; color: #9C8E80; margin: 6px 0 0;">Chips filter with AND across selections (a selection that matches nothing surfaces the no-results state, which is intended). Switch <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">.every</code> → <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">.some</code> for OR matching if you prefer a broader net.</p>
+
+  <div style="height: 1px; background: #E8DFCF; margin: 34px 0;"></div>
+
+  <div style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #BC5A39; margin-bottom: 10px;">05 — Responsive &amp; a11y notes</div>
+  <ul style="font: 400 15px/1.75 'Work Sans'; color: #3A322B; margin: 0; padding-left: 22px;">
+    <li style="margin-bottom: 6px;">Mobile-first throughout. The grid and detail split use <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">auto-fill/minmax</code> and <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">flex-wrap</code> with flex-basis, so they reflow with no breakpoints; add <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">sm: / lg:</code> variants only where you want to force a specific column count.</li>
+    <li style="margin-bottom: 6px;">Fluid type via <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">clamp()</code> on the big display headings and cook-mode step text.</li>
+    <li style="margin-bottom: 6px;">Tap targets ≥ 44px in cook mode and on all mobile controls. Cook mode nav buttons are full-width and 56px tall.</li>
+    <li style="margin-bottom: 6px;">Ingredient / checklist toggles are real <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">&lt;button&gt;</code>s with <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">aria-pressed</code>; the search input needs a visible label or <code style="font: 500 0.86em 'JetBrains Mono', monospace; background: #F1E8D8; color: #8A4E33; padding: 1px 5px; border-radius: 5px;">aria-label</code>.</li>
+    <li>The prototype's "State" switcher (top-right on Home) is a dev-only aid to preview loading / empty / no-results — drop it from production.</li>
+  </ul>
+
+  <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #E8DFCF; font: 400 12px 'JetBrains Mono', monospace; color: #B9A98F; letter-spacing: 0.04em;">Flip's Kitchen · handoff v1 · pairs with "Flip's Kitchen.dc.html"</div>
+</div>
+</x-dc>
+</body>
+</html>
