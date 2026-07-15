@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 2 complete (migration applied; RLS + storage bucket live; @nuxtjs/supabase wired). **Phase 3 (public pages) prompt ready — see below.**
+> **Status:** Phase 3 complete (public list + detail pages, cook mode, print, seed; verified on dev + vercel build). **Phase 4 (search & filtering) prompt ready — see below.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -136,11 +136,13 @@ search over titles, ingredients, and cuisines, and render the filter chips. Acti
 filters sync to the URL so results are shareable and survive refresh. (If the catalog ever
 grows into the many hundreds, migrate search to Postgres full-text or Meilisearch.)
 
-**Decision to make in Phase 4 — what the top filter chips match.** The curated chips
-(Chicken, Pork, Beef, Seafood, Noodles, Rice, Coconut, Vegetarian, Spicy, Quick) mix
-ingredient-ish and attribute-ish terms. Cleanest default: treat that row as **tag-based**
-filters and let the free-text search box cover ingredients and cuisines. Adjustable — you can
-have chips match ingredient `name_key`s, `tags`, or a union.
+**Decided (Phase 4) — how the top filter chips match.** The curated chips (Chicken, Pork, Beef,
+Seafood, Noodles, Rice, Coconut, Vegetarian, Spicy, Quick) stay a fixed list matching the design.
+A recipe matches a chip when the chip term (lowercased) is in its `tags` OR its ingredient
+`name_key`s — so single-ingredient chips (Chicken/Rice/Coconut) match automatically via
+ingredients, while category/attribute chips (Seafood/Noodles/Vegetarian/Spicy/Quick) match via
+tags applied in admin. Multiple selected chips combine as match-ANY (OR) by default, behind a
+constant so it can be flipped to match-all. ("Quick" optionally = total time ≤ 30 min instead.)
 
 ---
 
@@ -329,12 +331,56 @@ in Vercel's env — handled in Phase 7.)
 ### Phase 4 — Search & ingredient filtering
 
 ```
-Add search and filtering to the home page, client-side. Load a lightweight recipe index
-(title, slug, image, cuisine, tags, ingredient name_keys). Use Fuse.js for fuzzy search over
-titles, ingredients, and cuisines. Implement the curated top filter chips as tag-based filters
-(match-any by default, with a match-all toggle) and let the search box cover ingredients and
-cuisines. Debounce the search input and sync search + active filters to the URL query so
-results are shareable and persist on refresh. Include a clear "no results" state.
+PHASE 4 — Search & ingredient filtering (client-side)
+
+Add the search box and the curated filter chips to the home page (app/pages/index.vue),
+implementing the design's search bar, FILTER chip row, live result count, and "No results" state.
+All filtering is client-side over the already-loaded recipe list (small catalog).
+
+Data:
+- Extend the useRecipes select (the Phase 3 note marks the spot) to also fetch each recipe's
+  ingredient name_keys — recipe_ingredients(name_key) only, kept lightweight. Keep fetching the
+  list server-side via useAsyncData so SSR/ISR is preserved and the full set is present on first
+  paint.
+
+Search (Fuse.js):
+- Fuzzy search over: title (highest weight), cuisine, and ingredient names; tags at lower weight.
+  Tune the threshold to be forgiving but not noisy. Build the Fuse index once from the loaded list
+  (memoized); search reactively as the query changes.
+
+Filter chips (curated, fixed — match the design):
+- Chips: Chicken, Pork, Beef, Seafood, Noodles, Rice, Coconut, Vegetarian, Spicy, Quick. Keep the
+  list in one constant so it's easy to edit.
+- A recipe matches a chip when the chip term (lowercased) is in its tags OR its ingredient
+  name_keys. (Single-ingredient chips match automatically via ingredients; category/attribute
+  chips match via tags applied in admin. Optionally treat "Quick" as total time <= 30 min instead;
+  default to the tag/ingredient rule.)
+- Multiple selected chips combine as match-ANY (OR) by default. Put the combine mode behind a
+  constant so it can be flipped to match-all later; don't add an any/all toggle control unless it
+  fits the design's chip row cleanly.
+- Chips are accessible toggle buttons (aria-pressed), keyboard-operable; the row scrolls/wraps on
+  mobile per the design.
+
+Combine + results:
+- Visible results = recipes matching the search text (if any) AND the selected chips (if any).
+  Empty search + no chips = all recipes.
+- Update the result count to the filtered count ("N recipes"). When recipes exist but none match,
+  show the design's "No results" state with a "Clear filters" action (distinct from the empty-DB
+  EmptyState). Reset returns to the full list.
+
+URL sync (shareable + survives refresh):
+- Reflect the search text and selected chips in the URL query (e.g. ?q=&tags=). Read initial state
+  from the query on load; update with router.replace (not push, no history spam); debounce the
+  search input (~250ms). Ensure server and client derive the same filtered set from the same list +
+  query (no hydration mismatch).
+
+Structure the search/filter logic as a composable (e.g. useRecipeSearch) rather than stuffing it
+into the page. Keep the page's existing hero, grid, and empty state.
+
+Verify: typecheck, lint, and the vercel-preset build pass; with the seed data, searching
+"adobo"/"thai" narrows correctly, the Chicken chip matches while Beef shows the No-results state,
+chips + search combine, the URL updates, a pasted filtered URL restores the same view, and there
+are no hydration warnings.
 ```
 
 ### Phase 5 — Admin mode (auth + CRUD + uploads)
