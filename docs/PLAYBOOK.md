@@ -1,9 +1,7 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 7A complete (polish, SEO & error handling — title template + canonical + default OG, @nuxtjs/sitemap + @nuxtjs/robots wired to NUXT_PUBLIC_SITE_URL, branded error.vue, admin loading skeletons, a11y pass with skip link + landmarks + global focus ring + WCAG-AA contrast fixes, self-hosted fonts via @nuxt/fonts; typecheck/lint/vercel-build all green, sitemap + 404 + robots verified). **Next: Phase 7B — deploy (manual, GitHub + Vercel). Final step; see below.**
-> **Last updated:** 2026-07-16 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump) · +@nuxtjs/sitemap 8 · @nuxtjs/robots 6 · @nuxt/fonts 0.14
->
-> **Phase 7B reminder:** set `NUXT_PUBLIC_SITE_URL` in Vercel after the first deploy — canonical, OG image URLs, sitemap `<loc>`s and the robots `Sitemap:` line all read it (they fall back to the request origin until it's set). In dev, `/robots.txt` shows `Disallow: /` on purpose (indexing blocked); check prod output with `/robots.txt?mockProductionEnv=true`.
+> **Status:** 🚀 SHIPPED — all 7 phases complete. Live at https://flips-kitchen-recipes.vercel.app (Nuxt 4 + Supabase on Vercel, ISR, admin CRUD with image upload, search/filter, cook mode, print, anime.js motion, SEO + a11y). **Post-launch loose ends noted in Tips.**
+> **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
 entering recipes, photos, and an optional reference YouTube video.
@@ -589,3 +587,24 @@ renders for a bad URL; a keyboard-only pass reaches every control with visible f
   iOS — the focused view should still work without the lock as a fallback.
 - **Versions drift:** the pins above are known-good July 2026 baselines. Have Claude Code
   install the latest stable of each and check official docs if a setup step differs.
+
+---
+
+## Post-launch loose ends (open items to close now that it's live)
+
+1. **Confirm write access is locked (security).** In Supabase → Authentication, verify "Allow new
+   users to sign up" and "Anonymous sign-ins" are both OFF — with RLS granting writes to any
+   authenticated user, these settings are the only thing keeping write access to you. This is the
+   one item that actually matters for a public site.
+2. **Clear the seed rows.** Adobo / Pad Thai / Katsu Curry are seed data with no hero photos and a
+   Big Buck Bunny placeholder video — now publicly visible. Replace them with real recipes/photos or
+   delete them (the delete snippet in supabase/seed.sql) before sharing the site widely.
+3. **Gallery is a dead end.** Admin uploads + stores gallery images, but the public detail page
+   (Phase 3) doesn't render a gallery — so those photos go to storage and never show. Either wire a
+   gallery into the detail page or remove the gallery uploader from the admin form.
+4. **Optional: scope writes to your admin UID.** Apply migration 0002 (replace the placeholder with
+   your UID from Authentication → Users) for defense-in-depth beyond the signup toggles.
+5. **Optional: custom domain.** Vercel → Domains → add your domain and follow the DNS steps; then
+   update NUXT_PUBLIC_SITE_URL and the Supabase Auth Site URL to match.
+6. **Keep this doc honest.** Update the status line + version pins in the same commit as any future
+   change (schema, image provider, deps) so the playbook doesn't drift from the code.
