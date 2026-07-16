@@ -30,6 +30,23 @@ export function formatQuantity(quantity: number | null | undefined): string {
   return String(Number(quantity.toFixed(2)))
 }
 
+/**
+ * Parse a cook-typed amount back to a number for storage — the inverse of formatQuantity.
+ * Accepts decimals ("0.5"), simple fractions ("1/2") and mixed numbers ("1 1/2"). Returns
+ * null for blank or unparseable input (e.g. "to taste"), which the schema allows.
+ */
+export function parseQuantity(raw: string | number | null | undefined): number | null {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null
+  const s = String(raw ?? '').trim()
+  if (!s) return null
+  const mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/)
+  if (mixed) return Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3])
+  const frac = s.match(/^(\d+)\/(\d+)$/)
+  if (frac) return Number(frac[2]) === 0 ? null : Number(frac[1]) / Number(frac[2])
+  const n = Number(s)
+  return Number.isFinite(n) ? n : null
+}
+
 /** Combine quantity + unit into one label, e.g. `formatAmount(0.5, 'cup')` → "½ cup". */
 export function formatAmount(
   quantity: number | null | undefined,
@@ -84,6 +101,16 @@ export function difficultyMeta(difficulty: string | null | undefined): Difficult
   if (!text) return { level: 0, label: '' }
   const level = DIFFICULTY_LEVELS[text.toLowerCase()] ?? 3
   return { level, label: text.charAt(0).toUpperCase() + text.slice(1) }
+}
+
+// Reverse direction for the admin editor: the 1–5 difficulty meter maps back to the
+// canonical free-text value stored in `difficulty`. Index 0 = unset. Round-trips through
+// difficultyMeta() (e.g. "Very easy" → level 1 → "Very easy").
+const DIFFICULTY_BY_LEVEL = ['', 'Very easy', 'Easy', 'Medium', 'Hard', 'Advanced'] as const
+
+/** Map a 1–5 meter level to its canonical difficulty text; 0/out-of-range → null. */
+export function difficultyForLevel(level: number): string | null {
+  return DIFFICULTY_BY_LEVEL[level] || null
 }
 
 // --- YouTube ----------------------------------------------------------------

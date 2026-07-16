@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 4 complete (client-side search + filter chips, URL sync, No-results state; verified). **Phase 5 (admin mode) prompt ready — see below.**
+> **Status:** Phase 5 complete (admin auth, protected /admin, create/edit/delete form, image upload, refined chip match; typecheck + lint + vercel build pass — live-DB CRUD to be smoke-tested by the owner). **Phase 6 (anime.js) next — see below.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -143,6 +143,23 @@ A recipe matches a chip when the chip term (lowercased) is in its `tags` OR its 
 ingredients, while category/attribute chips (Seafood/Noodles/Vegetarian/Spicy/Quick) match via
 tags applied in admin. Multiple selected chips combine as match-ANY (OR) by default, behind a
 constant so it can be flipped to match-all. ("Quick" optionally = total time ≤ 30 min instead.)
+
+**Decided (Phase 5) — admin auth, routing, freshness.** Only `/admin/**` is gated: a named
+`auth` route middleware checks `useSupabaseUser()` (with a `getSession()` fallback for the
+ssr:false cold-load race) and redirects to `/login?redirect=…`; the rest of the site stays
+public (`redirect: false`). `/login` signs in with email + password. The admin section has its
+own `admin` layout (header with logout + the shared flash toast); the public `AppHeader` reveals
+its admin links only to the signed-in owner, rendered inside `<ClientOnly>` so the ISR-shared
+HTML stays cacheable. CRUD lives in `useRecipeAdmin` (create = insert recipe → insert
+ingredients; edit = update row + delete/re-insert ingredients, keeping the slug stable; delete
+cascades + best-effort Storage cleanup). Slugs auto-generate with numeric-suffix collision
+handling. The chip predicate now matches a term as a whole **word** inside any ingredient
+`name_key` (so "Chicken" catches "chicken thighs"), tags still exact.
+
+**Freshness / ISR TTL.** Public pages (`/`, `/recipes/**`) use time-based ISR at
+`ISR_TTL_SECONDS = 60` (see `nuxt.config.ts`), so an admin edit becomes visible publicly within
+~60s of the edge cache expiring — the trade-off vs. `isr: true` (cached until redeploy). On-demand
+revalidation (revalidate the exact slug on save) is a possible later upgrade.
 
 ---
 

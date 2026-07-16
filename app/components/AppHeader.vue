@@ -40,24 +40,37 @@
           </svg>
           All recipes
         </NuxtLink>
-        <NuxtLink
-          to="/admin"
-          class="inline-flex items-center gap-1.5 rounded-field bg-clay px-4 py-2.5 text-[13.5px] font-semibold text-[#FFF7EF] transition hover:bg-clay-deep"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New recipe
-        </NuxtLink>
+
+        <!-- Admin entry points, shown only to the signed-in owner. Client-only so the
+             signed-out HTML stays cacheable (these pages are ISR-shared by all visitors). -->
+        <ClientOnly>
+          <template v-if="user">
+            <NuxtLink
+              to="/admin"
+              class="inline-flex items-center gap-1.5 rounded-field border border-line bg-paper px-3.5 py-2 text-[13.5px] font-semibold text-ink transition hover:border-[#D9CCB6] hover:bg-cream"
+            >
+              Admin
+            </NuxtLink>
+            <NuxtLink
+              to="/admin/new"
+              class="inline-flex items-center gap-1.5 rounded-field bg-clay px-4 py-2.5 text-[13.5px] font-semibold text-[#FFF7EF] transition hover:bg-clay-deep"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              New recipe
+            </NuxtLink>
+          </template>
+        </ClientOnly>
       </div>
     </div>
   </header>
@@ -66,4 +79,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const isHome = computed(() => route.path === '/')
+
+// Reveals the admin links for the signed-in owner (rendered client-only in the template).
+const user = useSupabaseUser()
 </script>

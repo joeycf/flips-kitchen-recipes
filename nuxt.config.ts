@@ -1,5 +1,9 @@
 import tailwindcss from '@tailwindcss/vite'
 
+// ISR revalidation window for the public pages (home + recipe detail). Also the freshness
+// window for admin edits: a saved recipe becomes visible publicly within this many seconds.
+const ISR_TTL_SECONDS = 60
+
 // Derive the Supabase Storage host (e.g. "<ref>.supabase.co") from SUPABASE_URL so
 // @nuxt/image is allowed to optimize remote hero photos. Nuxt loads .env before this
 // file, so process.env.SUPABASE_URL is available here; guard so a missing/blank URL
@@ -44,8 +48,8 @@ export default defineNuxtConfig({
   },
 
   // Supabase backend. URL + key are read from SUPABASE_URL / SUPABASE_KEY in
-  // .env (see .env.example). `redirect: false` keeps the whole site public for
-  // now — Phase 5 adds /admin-only auth once the login page exists.
+  // .env (see .env.example). `redirect: false` keeps the public site ungated; the
+  // /admin section is protected by the `auth` route middleware instead (Phase 5).
   supabase: {
     redirect: false,
     types: '~/types/database.types.ts',
@@ -74,11 +78,14 @@ export default defineNuxtConfig({
   },
 
   // Per-route rendering:
-  //  - Public pages use ISR (regenerated on Vercel, cached at the edge).
+  //  - Public pages use time-based ISR: regenerated on Vercel and cached at the edge,
+  //    revalidated at most once per ISR_TTL_SECONDS. This is the freshness window for
+  //    admin edits — a saved recipe appears publicly within ~a minute (see docs/PLAYBOOK
+  //    → Phase 5 "Freshness"). On-demand revalidation is a possible later upgrade.
   //  - /admin is a client-rendered SPA section and is never prerendered.
   routeRules: {
-    '/': { isr: true },
-    '/recipes/**': { isr: true },
+    '/': { isr: ISR_TTL_SECONDS },
+    '/recipes/**': { isr: ISR_TTL_SECONDS },
     '/admin/**': { ssr: false, prerender: false },
   },
 })

@@ -106,21 +106,25 @@ export function useRecipeSearch(recipes: Ref<RecipeCardData[] | null | undefined
   })
 
   // Chip pass over the text-matched set. A recipe matches a chip when the chip term is
-  // one of its tags or ingredient name_keys (case-insensitive).
+  // one of its `tags` (exact, discrete pills) OR appears as a whole WORD inside any
+  // ingredient name_key — so "Chicken" catches a "chicken thighs" ingredient, while
+  // staying word-scoped (it won't match "chickpea"). Case-insensitive throughout.
   const filtered = computed<RecipeCardData[]>(() => {
     const chips = selectedChips.value
     if (!chips.length) return textMatched.value
 
     const terms = chips.map((c) => c.toLowerCase())
     return textMatched.value.filter((r) => {
-      const haystack = new Set<string>([
-        ...r.tags.map((t) => t.toLowerCase()),
-        ...r.recipe_ingredients
-          .map((i) => i.name_key?.toLowerCase())
-          .filter((k): k is string => Boolean(k)),
-      ])
+      const tags = new Set(r.tags.map((t) => t.toLowerCase()))
+      // Every distinct word across the recipe's ingredient name_keys.
+      const ingredientWords = new Set<string>()
+      for (const ing of r.recipe_ingredients) {
+        const key = ing.name_key?.toLowerCase()
+        if (!key) continue
+        for (const word of key.split(/[^a-z0-9]+/)) if (word) ingredientWords.add(word)
+      }
       const matches = (term: string) => {
-        if (haystack.has(term)) return true
+        if (tags.has(term) || ingredientWords.has(term)) return true
         if (term === 'quick' && TREAT_QUICK_AS_TIME) {
           const total = totalMinutes(r.prep_minutes, r.cook_minutes)
           return total != null && total <= QUICK_MAX_MINUTES
