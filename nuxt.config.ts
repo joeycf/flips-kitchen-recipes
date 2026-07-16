@@ -16,6 +16,16 @@ const supabaseImageDomains = (() => {
   }
 })()
 
+// Phase 6 motion priming. Runs inline in <head> on the client BEFORE first paint, so the
+// entrance start-states (see main.css `html.js-motion …`) hide their targets ahead of the
+// JS-driven reveal — no flash of SSR content appearing then hiding on hydration. It's a
+// progressive enhancement: skipped entirely under reduced motion, and never added without
+// JS, so content stays visible in both cases. The load-time failsafe (3s after load, long
+// past any entrance) both drops the class AND clears any inline opacity/transform anime may
+// have left on a target — so content can never get stuck hidden, even if the animation was
+// interrupted (e.g. a backgrounded tab) before it finished.
+const MOTION_PRIME_SCRIPT = `(function(){try{var m=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)');if(m&&m.matches)return;var r=document.documentElement;r.classList.add('js-motion');window.addEventListener('load',function(){setTimeout(function(){r.classList.remove('js-motion');var e=document.querySelectorAll('[data-entering] > *,[data-reveal]');for(var i=0;i<e.length;i++){e[i].style.opacity='';e[i].style.transform='';}},3000)})}catch(e){}})()`
+
 // Nuxt 4 config — https://nuxt.com/docs/api/nuxt-config
 export default defineNuxtConfig({
   // Pin framework behaviour to a recent date.
@@ -62,8 +72,21 @@ export default defineNuxtConfig({
   },
 
   app: {
+    // Subtle built-in fade/slide for list ↔ detail route changes. anime.js handles the
+    // in-page choreography (which only runs on the initial hard load), so the two never
+    // double-animate. Disabled for print + reduced motion in main.css.
+    pageTransition: { name: 'page', mode: 'out-in' },
+
     head: {
       htmlAttrs: { lang: 'en' },
+      script: [
+        {
+          innerHTML: MOTION_PRIME_SCRIPT,
+          // Emit early in <head> and run before body paint (no defer/async).
+          tagPosition: 'head',
+          tagPriority: 'critical',
+        },
+      ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         // Fonts referenced by the design tokens (Spectral / Work Sans / JetBrains Mono).

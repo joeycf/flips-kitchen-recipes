@@ -7,6 +7,7 @@
     <button
       v-for="chip in chips"
       :key="chip"
+      v-press
       type="button"
       :aria-pressed="isActive(chip)"
       :class="chipClass(chip)"

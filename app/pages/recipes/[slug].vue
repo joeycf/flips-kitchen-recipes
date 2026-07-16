@@ -1,8 +1,8 @@
 <template>
   <main class="relative z-10 mx-auto max-w-read px-6 pb-24 pt-6">
-    <article v-if="recipe">
+    <article v-if="recipe" ref="articleEl">
       <!-- Title block -->
-      <div class="mb-[22px] max-w-[720px]">
+      <div :data-reveal="revealAttr" class="mb-[22px] max-w-[720px]">
         <div
           v-if="recipe.cuisine"
           class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-clay"
@@ -21,6 +21,7 @@
 
       <!-- Hero -->
       <div
+        :data-reveal="revealAttr"
         class="relative mb-[18px] aspect-video overflow-hidden rounded-[22px] border border-line shadow-[0_20px_44px_-28px_rgba(90,50,20,0.4)] print:max-h-[240px] print:rounded-lg print:border-0 print:shadow-none"
       >
         <NuxtImg
@@ -36,11 +37,16 @@
       </div>
 
       <!-- Meta strip -->
-      <MetaStrip :recipe="recipe" />
+      <MetaStrip :recipe="recipe" :data-reveal="revealAttr" />
 
       <!-- Actions (screen only) -->
-      <div data-noprint class="my-[34px] flex flex-wrap gap-2.5 print:hidden">
+      <div
+        data-noprint
+        :data-reveal="revealAttr"
+        class="my-[34px] flex flex-wrap gap-2.5 print:hidden"
+      >
         <button
+          v-press
           type="button"
           class="inline-flex items-center gap-2 rounded-[13px] bg-clay px-[22px] py-3.5 text-[15.5px] font-semibold text-[#FFF7EF] shadow-clay transition hover:bg-clay-deep"
           @click="cookOpen = true"
@@ -61,6 +67,7 @@
           Cook mode
         </button>
         <button
+          v-press
           type="button"
           class="inline-flex items-center gap-2 rounded-[13px] border border-line bg-paper px-5 py-3.5 text-[15.5px] font-semibold text-ink transition hover:border-[#D9CCB6] hover:bg-cream"
           @click="printRecipe"
@@ -85,9 +92,9 @@
 
       <!-- Body: ingredients + method. flex-wrap basis → two columns that stack on mobile. -->
       <div class="flex flex-wrap items-start gap-[34px]">
-        <IngredientList :ingredients="recipe.recipe_ingredients" />
+        <IngredientList :ingredients="recipe.recipe_ingredients" :data-reveal="revealAttr" />
 
-        <section class="min-w-0 flex-[2.4_1_440px]">
+        <section :data-reveal="revealAttr" class="min-w-0 flex-[2.4_1_440px]">
           <h2 class="mb-5 font-display text-[24px] font-semibold text-ink">Method</h2>
           <MethodSteps :steps="recipe.instructions" />
           <VideoEmbed v-if="recipe.youtube_url" :url="recipe.youtube_url" :title="recipe.title" />
@@ -124,6 +131,20 @@ const cookOpen = ref(false)
 function printRecipe() {
   if (import.meta.client) window.print()
 }
+
+// --- Entrance (Phase 6): sequenced reveal, initial hard load only ------------
+// hero → meta → actions → ingredients → method ease in top-to-bottom. On client-side
+// navigation the built-in page transition handles the change instead, so we only mark +
+// animate when this is the first (server-hydrated) render (see useInitialLoad).
+const articleEl = ref<HTMLElement | null>(null)
+const initialLoad = useInitialLoad()
+const revealAttr = initialLoad ? '' : undefined
+
+onMounted(() => {
+  if (!initialLoad || !articleEl.value) return
+  const targets = Array.from(articleEl.value.querySelectorAll<HTMLElement>('[data-reveal]'))
+  revealSequence(targets)
+})
 
 // --- SEO ---------------------------------------------------------------------
 useSeoMeta({

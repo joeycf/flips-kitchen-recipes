@@ -88,6 +88,54 @@
 }
 
 /*
+  Motion (Phase 6) — anime.js drives the actual entrances; these rules only supply the
+  hidden START-state, applied on the client before paint. `.js-motion` is added to <html>
+  by the inline script in nuxt.config, and ONLY when motion is welcome (JS on, reduced
+  motion off) — so without it, entrance targets render visible (progressive enhancement,
+  no flash-of-hidden content). anime writes an inline opacity/transform as it animates in,
+  which overrides these.
+*/
+html.js-motion [data-entering] > *,
+html.js-motion [data-reveal] {
+  opacity: 0;
+}
+
+/*
+  Route-change page transition (list ↔ detail), driven by Nuxt. Kept subtle so it never
+  competes with the in-page anime.js choreography, which runs only on the initial load.
+*/
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/*
+  Reduced motion: no page transition. (The entrances are already skipped — `.js-motion`
+  is never added — so the start-state rules above stay inert without any override here.)
+*/
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
+  .page-enter-from,
+  .page-leave-to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
   Print — turn the on-screen recipe into a clean paper sheet. The detail page marks
   screen-only chrome (header, action buttons, video embed, paper grain) with
   `print:hidden` / `data-noprint`; these rules flatten and reflow what remains so the
@@ -123,6 +171,14 @@
     box-shadow: none !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* If a print fires mid-entrance, force the entrance targets fully visible (their
+     animation/transition are already killed above). */
+  [data-entering] > *,
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   /* Ingredients aside → plain block, no card chrome. */

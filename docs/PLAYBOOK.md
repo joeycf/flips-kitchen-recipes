@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 5 complete (admin auth, protected /admin, create/edit/delete form, image upload, refined chip match; typecheck + lint + vercel build pass — live-DB CRUD to be smoke-tested by the owner). **Phase 6 (anime.js) next — see below.**
+> **Status:** Phase 6 complete (anime.js v4 motion layer — staggered card entrance on the home grid, sequenced reveal on recipe detail, `v-press` micro-interaction on chips/buttons; progressive-enhancement no-flash entrance, reduced-motion + print safe; verified via typecheck, lint, vercel build, and headless-browser SSR/hydration checks). **Phase 7 (polish, SEO & deploy) is next.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -143,23 +143,6 @@ A recipe matches a chip when the chip term (lowercased) is in its `tags` OR its 
 ingredients, while category/attribute chips (Seafood/Noodles/Vegetarian/Spicy/Quick) match via
 tags applied in admin. Multiple selected chips combine as match-ANY (OR) by default, behind a
 constant so it can be flipped to match-all. ("Quick" optionally = total time ≤ 30 min instead.)
-
-**Decided (Phase 5) — admin auth, routing, freshness.** Only `/admin/**` is gated: a named
-`auth` route middleware checks `useSupabaseUser()` (with a `getSession()` fallback for the
-ssr:false cold-load race) and redirects to `/login?redirect=…`; the rest of the site stays
-public (`redirect: false`). `/login` signs in with email + password. The admin section has its
-own `admin` layout (header with logout + the shared flash toast); the public `AppHeader` reveals
-its admin links only to the signed-in owner, rendered inside `<ClientOnly>` so the ISR-shared
-HTML stays cacheable. CRUD lives in `useRecipeAdmin` (create = insert recipe → insert
-ingredients; edit = update row + delete/re-insert ingredients, keeping the slug stable; delete
-cascades + best-effort Storage cleanup). Slugs auto-generate with numeric-suffix collision
-handling. The chip predicate now matches a term as a whole **word** inside any ingredient
-`name_key` (so "Chicken" catches "chicken thighs"), tags still exact.
-
-**Freshness / ISR TTL.** Public pages (`/`, `/recipes/**`) use time-based ISR at
-`ISR_TTL_SECONDS = 60` (see `nuxt.config.ts`), so an admin edit becomes visible publicly within
-~60s of the edge cache expiring — the trade-off vs. `isr: true` (cached until redeploy). On-demand
-revalidation (revalidate the exact slug on save) is a possible later upgrade.
 
 ---
 
@@ -473,18 +456,44 @@ deleting the seed rows (the delete snippet in supabase/seed.sql) once you have y
 ### Phase 6 — Animations with anime.js
 
 ```
-Add anime.js v4 (latest, ~4.5.0) for tasteful motion: staggered entrance of recipe cards on the
-home grid, smooth transitions between list and detail, and small micro-interactions on buttons
-and filter chips.
+PHASE 6 — anime.js motion layer (polish on a working app)
 
-Use the v4 API correctly: there is no global `anime` object — use named ESM imports (e.g.
-`import { animate, stagger } from 'animejs'`, and subpath imports like `animejs/utils` where
-useful), the `animate(targets, params)` signature, and v4 param names (`ease` not `easing`,
-`to` not `value`). Prefer animating transforms and opacity.
+Add anime.js v4 (latest, ~4.5.0) for tasteful motion. The app is fully built, so this is
+enhancement only — nothing here should change behavior or block content.
 
-anime.js manipulates the DOM, so run it only client-side — inside onMounted, a client-only
-plugin, or within <ClientOnly>. Respect prefers-reduced-motion: skip or reduce animations when
-the user prefers reduced motion.
+What to animate:
+- Staggered entrance of recipe cards on the home grid (fade + slight rise), on INITIAL load only.
+- A subtle reveal on the recipe detail page (hero, then meta/ingredients/steps easing in).
+- Small micro-interactions where they add something (chip toggle, primary buttons).
+
+Critical interaction with existing features:
+- The home grid is filtered client-side (Phase 4). Do NOT re-run the full staggered entrance on
+  every keystroke/chip toggle — it's jarring. Stagger only on first load; when the filtered set
+  changes, keep it instant or a quick subtle fade, not a re-stagger.
+- Cards are server-rendered (ISR). Entrance animation must be progressive enhancement: content
+  stays visible if JS doesn't run, and there must be NO flash where SSR'd cards appear then hide
+  then re-animate on hydration. Apply the hidden start-state only on the client, before paint.
+- Print already hides animations (Phase 3); ensure motion doesn't run in print or fight the
+  full-screen cook-mode overlay.
+
+How:
+- v4 API: no global `anime` — named ESM imports (import { animate, stagger } from 'animejs',
+  subpaths like animejs/utils where useful), animate(targets, params), v4 param names (`ease` not
+  `easing`, `to` not `value`). Animate transforms + opacity only; short durations (~200–400ms),
+  small stagger (~30–50ms).
+- Run client-side only (onMounted / client plugin / <ClientOnly>). Put reusable entrance logic in a
+  small composable.
+- Respect prefers-reduced-motion: skip entrances/transitions entirely (or reduce to a plain fade)
+  when the user prefers reduced motion.
+- For list↔detail route changes, use Nuxt's built-in page transition (a subtle fade/slide) rather
+  than hand-driving route transitions with anime.js; keep anime.js for in-page choreography so the
+  two systems don't double-animate. (anime.js-driven page transitions are an optional later upgrade.)
+- Taste: use anime.js where it adds real choreography (staggers, sequenced reveals); leave simple
+  hover/press states to CSS. Don't over-animate — restraint reads as premium.
+
+Verify: typecheck, lint, vercel-preset build pass; cards stagger in once on load and do NOT
+re-stagger while searching/filtering; no flash-of-hidden content on hydration; reduced-motion
+disables it; print and cook mode unaffected.
 ```
 
 ### Phase 7 — Polish, SEO & deploy
