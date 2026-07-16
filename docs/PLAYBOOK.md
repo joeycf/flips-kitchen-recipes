@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 6 complete (anime.js v4 motion layer — staggered card entrance on the home grid, sequenced reveal on recipe detail, `v-press` micro-interaction on chips/buttons; progressive-enhancement no-flash entrance, reduced-motion + print safe; verified via typecheck, lint, vercel build, and headless-browser SSR/hydration checks). **Phase 7 (polish, SEO & deploy) is next.**
+> **Status:** Phase 6 complete (anime.js motion layer — staggered entrance, detail reveal, progressive-enhancement no-flash contract, reduced-motion honored; verified). **Phase 7 (polish, SEO & deploy) prompt ready — see below. Final phase.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -496,16 +496,77 @@ re-stagger while searching/filtering; no flash-of-hidden content on hydration; r
 disables it; print and cook mode unaffected.
 ```
 
-### Phase 7 — Polish, SEO & deploy
+### Phase 7 — Polish, SEO & deploy (final)
+
+Two halves: **7A** = last code polish (Claude Code). **7B** = deploy (manual, in GitHub + Vercel).
+
+**Phase 7A prompt (Claude Code):**
 
 ```
-Finalize and deploy. Add @nuxtjs/sitemap and robots, Open Graph / social preview images,
-loading skeletons, graceful empty and error states, and an accessibility pass (labels, focus
-states, alt text, keyboard nav). Confirm the print stylesheet and cook mode work on mobile.
-Create the Vercel project, add the Supabase environment variables, set the Node version to 24.x,
-connect the git repo, and deploy. Verify in production that ISR revalidation and image
-optimization work, and that admin routes are not publicly reachable.
+PHASE 7A — Polish, SEO & error handling
+
+Final code polish before deploy. The app works; this hardens and finishes it.
+
+SEO & metadata:
+- Site-wide defaults: a title template ("<page> · Flip's Kitchen"), default description, default OG
+  image, html lang="en", theme-color, canonical URLs. Per-recipe pages already have useSeoMeta +
+  schema.org/Recipe (Phase 3) — set each recipe's og:image to its hero_image (fall back to the
+  default OG image when null).
+- Sitemap: add @nuxtjs/sitemap and generate sitemap.xml including the dynamic recipe routes (pull
+  the slugs from Supabase in a sitemap source). Add robots.txt allowing indexing and pointing to the
+  sitemap. Both need the production site URL — read it from runtime config (NUXT_PUBLIC_SITE_URL) so
+  it's correct in production.
+- Favicon is set; add apple-touch-icon + theme-color. (Web manifest optional.)
+
+Error, loading & empty states:
+- A branded error.vue (Nuxt error page) for 404 + 500, on-brand, with a link home; the detail page's
+  createError(404) should render through it nicely.
+- Loading skeletons where data is fetched client-side (the /admin list, and the edit form while it
+  loads a recipe). Confirm the existing empty + no-results states still look right.
+
+Accessibility pass:
+- alt text on all images (recipe hero alt = title). Labels on every admin form field. Visible focus
+  states throughout; keyboard operability (chips, cook mode already). Landmark regions
+  (header/nav/main) + a skip-to-content link. Check text contrast against the cream/clay palette meets
+  WCAG AA and fix any shortfalls. Reduced-motion already handled.
+
+Optional upgrade (removes layout shift + an external request):
+- Replace the Google Fonts <link> with @nuxt/fonts to self-host Spectral / Work Sans / JetBrains Mono.
+  Nice-to-have; skip if it risks the look.
+
+Verify: typecheck, lint, vercel-preset build pass; sitemap.xml lists all recipe slugs; error.vue
+renders for a bad URL; a keyboard-only pass reaches every control with visible focus; contrast passes.
 ```
+
+**Phase 7B — deploy (manual; drive it yourself, ask for per-screen detail when needed):**
+
+1. Push to GitHub. Create a new empty GitHub repo (no README). Push local `main` to it (Claude Code
+   can run `git remote add` + `git push` if git is signed in, else use your terminal). Confirm `.env`
+   did NOT get pushed.
+2. Import to Vercel. Add New → Project → import the repo. Vercel auto-detects Nuxt — don't override
+   build settings.
+3. Node 24.x. Vercel → Settings → General → Node.js Version → 24.x (matches .nvmrc/engines).
+4. Env vars (ESSENTIAL). Vercel → Settings → Environment Variables → add SUPABASE_URL and SUPABASE_KEY
+   (same publishable key as .env), for Production + Preview. Without these the live site can't load
+   recipes.
+5. Site URL. After first deploy, set NUXT_PUBLIC_SITE_URL to the live URL so canonical/sitemap/OG use
+   absolute production URLs; redeploy.
+6. Point Supabase at production. Supabase → Authentication → URL Configuration → set Site URL to the
+   production URL.
+7. Custom domain (optional). Vercel → Domains → add it, follow DNS steps.
+
+**Pre-launch security check (site is public now):**
+- Supabase → Authentication: sign-ups OFF and anonymous sign-ins OFF (limits write access to you).
+- Only SUPABASE_URL + the publishable SUPABASE_KEY in env — never the secret/service_role key.
+- RLS on (it is). Optional: apply the 0002 admin-UID write-scoping migration for defense in depth.
+- .env not in the repo.
+
+**Verify live:**
+- Home + a detail page render your recipes + images (env vars working).
+- Log in on the live /login; /admin works and redirects to /login when logged out; admin not publicly
+  reachable.
+- After an edit, wait past the 60s ISR window → change appears.
+- sitemap.xml and a social link preview look right.
 
 ---
 
