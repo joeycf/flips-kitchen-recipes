@@ -1,7 +1,9 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 6 complete (anime.js motion layer — staggered entrance, detail reveal, progressive-enhancement no-flash contract, reduced-motion honored; verified). **Phase 7 (polish, SEO & deploy) prompt ready — see below. Final phase.**
-> **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
+> **Status:** Phase 7A complete (polish, SEO & error handling — title template + canonical + default OG, @nuxtjs/sitemap + @nuxtjs/robots wired to NUXT_PUBLIC_SITE_URL, branded error.vue, admin loading skeletons, a11y pass with skip link + landmarks + global focus ring + WCAG-AA contrast fixes, self-hosted fonts via @nuxt/fonts; typecheck/lint/vercel-build all green, sitemap + 404 + robots verified). **Next: Phase 7B — deploy (manual, GitHub + Vercel). Final step; see below.**
+> **Last updated:** 2026-07-16 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump) · +@nuxtjs/sitemap 8 · @nuxtjs/robots 6 · @nuxt/fonts 0.14
+>
+> **Phase 7B reminder:** set `NUXT_PUBLIC_SITE_URL` in Vercel after the first deploy — canonical, OG image URLs, sitemap `<loc>`s and the robots `Sitemap:` line all read it (they fall back to the request origin until it's set). In dev, `/robots.txt` shows `Disallow: /` on purpose (indexing blocked); check prod output with `/robots.txt?mockProductionEnv=true`.
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
 entering recipes, photos, and an optional reference YouTube video.

@@ -1,5 +1,5 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-[820px] px-6 pb-[120px] pt-7">
+  <main id="main-content" tabindex="-1" class="relative z-10 mx-auto max-w-[820px] px-6 pb-[120px] pt-7">
     <div class="mb-6">
       <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-clay">
         Admin
@@ -11,12 +11,7 @@
       </h1>
     </div>
 
-    <div
-      v-if="pending"
-      class="rounded-card border border-line bg-paper p-8 text-center text-ink-soft"
-    >
-      Loading recipe…
-    </div>
+    <FormSkeleton v-if="pending" />
 
     <div
       v-else-if="error || !recipe"
@@ -46,6 +41,7 @@
 // Explicit import — components/admin/ is path-prefixed by Nuxt auto-import, so a bare
 // <RecipeForm> tag wouldn't resolve (it would silently render nothing).
 import RecipeForm from '~/components/admin/RecipeForm.vue'
+import FormSkeleton from '~/components/admin/FormSkeleton.vue'
 import type { RecipeFormPayload } from '~/types/admin'
 
 definePageMeta({ layout: 'admin', middleware: 'auth' })
@@ -87,5 +83,5 @@ function onCancel() {
   navigateTo('/admin')
 }
 
-useHead({ title: "Edit recipe · Admin · Flip's Kitchen" })
+useHead({ title: 'Edit recipe · Admin' })
 </script>

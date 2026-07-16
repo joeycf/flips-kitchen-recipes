@@ -1,5 +1,6 @@
 <template>
   <div>
+    <SkipLink />
     <AdminHeader />
     <slot />
     <AdminFlash />

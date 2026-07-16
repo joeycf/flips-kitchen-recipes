@@ -1,5 +1,5 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-read px-6 pb-24 pt-6">
+  <main id="main-content" tabindex="-1" class="relative z-10 mx-auto max-w-read px-6 pb-24 pt-6">
     <article v-if="recipe" ref="articleEl">
       <!-- Title block -->
       <div :data-reveal="revealAttr" class="mb-[22px] max-w-[720px]">
@@ -147,13 +147,17 @@ onMounted(() => {
 })
 
 // --- SEO ---------------------------------------------------------------------
+// Bare title — the app-wide titleTemplate appends " · Flip's Kitchen". og:image is the
+// recipe's hero photo, falling back to the site's default social card when it has none.
+const toAbsolute = useAbsoluteUrl()
 useSeoMeta({
-  title: () => (recipe.value ? `${recipe.value.title} · Flip's Kitchen` : "Flip's Kitchen"),
+  title: () => recipe.value?.title ?? '',
   description: () => recipe.value?.description ?? undefined,
   ogTitle: () => recipe.value?.title,
   ogDescription: () => recipe.value?.description ?? undefined,
   ogType: 'article',
-  ogImage: () => recipe.value?.hero_image ?? undefined,
+  ogImage: () => recipe.value?.hero_image ?? toAbsolute('/og-default.png'),
+  ogImageAlt: () => recipe.value?.title,
 })
 
 // --- schema.org/Recipe JSON-LD for rich results ------------------------------

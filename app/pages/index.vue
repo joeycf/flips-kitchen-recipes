@@ -1,5 +1,5 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-8">
+  <main id="main-content" tabindex="-1" class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-8">
     <header class="mb-7 max-w-[640px]">
       <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-clay">
         Filipino · Thai · Japanese
@@ -34,7 +34,7 @@
         @clear="clearFilters"
       />
 
-      <p class="mb-4 text-[14px] text-[#8A7C6E]">
+      <p class="mb-4 text-[14px] text-ink-soft">
         <b class="font-semibold text-ink">{{ resultCount }}</b>
         {{ resultCount === 1 ? 'recipe' : 'recipes' }}
       </p>
@@ -52,12 +52,12 @@ const { data: recipes, error } = await useRecipes()
 const { search, selectedChips, chips, filtered, resultCount, hasActiveFilters, showNoResults, clearFilters } =
   useRecipeSearch(recipes)
 
+// No `title` here — the app-wide titleTemplate falls back to the brand home title
+// ("Flip's Kitchen · Family recipes") when a page sets none.
 useSeoMeta({
-  title: "Flip's Kitchen — family recipes",
   description:
     'A little collection of Filipino, Thai and Japanese dishes we cook on repeat — worth writing down and passing on.',
   ogTitle: "Flip's Kitchen — family recipes",
   ogDescription: 'Filipino, Thai and Japanese recipes from our family table.',
-  ogType: 'website',
 })
 </script>

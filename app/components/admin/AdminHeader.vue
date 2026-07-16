@@ -17,7 +17,7 @@
         </span>
       </NuxtLink>
 
-      <div class="flex items-center gap-2.5">
+      <nav aria-label="Admin" class="flex items-center gap-2.5">
         <NuxtLink
           to="/"
           class="inline-flex items-center gap-1.5 rounded-field border border-line bg-paper px-3.5 py-2 text-[13.5px] font-semibold text-ink transition hover:border-[#D9CCB6] hover:bg-cream"
@@ -59,7 +59,7 @@
           </svg>
           Log out
         </button>
-      </div>
+      </nav>
     </div>
   </header>
 </template>

@@ -20,7 +20,10 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@nuxt/fonts": "^0.14.0",
     "@nuxt/image": "2.0.0",
+    "@nuxtjs/robots": "^6.1.2",
+    "@nuxtjs/sitemap": "^8.2.2",
     "@nuxtjs/supabase": "^2.0.9",
     "animejs": "^4.5.0",
     "fuse.js": "^7.5.0",

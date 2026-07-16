@@ -71,7 +71,7 @@
             :key="ing.id"
             class="flex-none whitespace-nowrap rounded-pill bg-[#F1E8D8] px-3 py-1.5 text-[12.5px] font-medium text-ink-soft"
           >
-            <b v-if="amount(ing)" class="text-clay">{{ amount(ing) }} </b>{{ ing.name }}
+            <b v-if="amount(ing)" class="text-clay-deep">{{ amount(ing) }} </b>{{ ing.name }}
           </span>
         </div>
 

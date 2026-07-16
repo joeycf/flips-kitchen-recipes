@@ -1,5 +1,5 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-[820px] px-6 pb-[120px] pt-7">
+  <main id="main-content" tabindex="-1" class="relative z-10 mx-auto max-w-[820px] px-6 pb-[120px] pt-7">
     <div class="mb-6">
       <div class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-clay">
         Admin
@@ -52,5 +52,5 @@ function onCancel() {
   navigateTo('/admin')
 }
 
-useHead({ title: "New recipe · Admin · Flip's Kitchen" })
+useHead({ title: 'New recipe · Admin' })
 </script>

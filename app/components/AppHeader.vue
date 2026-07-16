@@ -20,7 +20,7 @@
         </span>
       </NuxtLink>
 
-      <div class="flex items-center gap-2.5">
+      <nav aria-label="Primary" class="flex items-center gap-2.5">
         <NuxtLink
           v-if="!isHome"
           to="/"
@@ -71,7 +71,7 @@
             </NuxtLink>
           </template>
         </ClientOnly>
-      </div>
+      </nav>
     </div>
   </header>
 </template>

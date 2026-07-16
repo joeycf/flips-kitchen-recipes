@@ -7,7 +7,7 @@
       <div class="h-10 w-10 rounded-b-full border-[3px] border-t-0 border-clay" />
     </div>
     <h2 class="font-display text-[26px] font-semibold text-ink">No recipes yet</h2>
-    <p class="mt-2.5 text-[15px] leading-relaxed text-[#8A7C6E]">
+    <p class="mt-2.5 text-[15px] leading-relaxed text-ink-soft">
       Your kitchen's a blank slate. Add your first recipe and it'll show up right here in the
       collection.
     </p>

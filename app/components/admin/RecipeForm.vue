@@ -36,25 +36,31 @@
 
       <div class="mb-[18px] flex flex-wrap gap-[22px]">
         <div class="min-w-[240px] flex-1">
-          <label
+          <span
             class="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint"
           >
             Cuisine
-          </label>
+          </span>
           <CuisineSelect v-model="cuisine" />
         </div>
         <div class="flex-1 basis-[180px]">
-          <label
+          <span
+            :id="ids.difficulty"
             class="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint"
           >
             Difficulty
-          </label>
-          <div class="flex items-center gap-2.5 py-1.5">
+          </span>
+          <div
+            class="flex items-center gap-2.5 py-1.5"
+            role="group"
+            :aria-labelledby="ids.difficulty"
+          >
             <button
               v-for="n in 5"
               :key="n"
               type="button"
               :aria-label="`Set difficulty ${n}`"
+              :aria-pressed="n <= difficultyLevel"
               class="h-[22px] w-[22px] rounded-full transition"
               :style="{ background: n <= difficultyLevel ? 'var(--color-clay)' : '#E4D9C6' }"
               @click="setDifficulty(n)"
@@ -116,11 +122,11 @@
       </div>
 
       <div class="mt-[18px]">
-        <label
+        <span
           class="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint"
         >
           Tags
-        </label>
+        </span>
         <TagsInput v-model="tags" />
       </div>
 
@@ -129,7 +135,7 @@
           :for="ids.youtube"
           class="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint"
         >
-          YouTube URL <span class="normal-case tracking-normal text-[#C3B49C]">(optional)</span>
+          YouTube URL <span class="normal-case tracking-normal text-ink-faint">(optional)</span>
         </label>
         <input
           :id="ids.youtube"
@@ -263,6 +269,7 @@ const ids = {
   servings: `${uid}-servings`,
   prep: `${uid}-prep`,
   cook: `${uid}-cook`,
+  difficulty: `${uid}-difficulty`,
   youtube: `${uid}-youtube`,
 }
 

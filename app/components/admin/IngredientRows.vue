@@ -11,13 +11,13 @@
         @drop="onDrop(index, $event)"
       >
         <span
-          class="flex flex-none cursor-grab px-1 py-1.5 active:cursor-grabbing"
+          class="flex flex-none cursor-grab px-1 py-1.5 text-ink-faint active:cursor-grabbing"
           draggable="true"
           aria-label="Drag to reorder"
           @dragstart="onDragStart(index, $event)"
           @dragend="onDragEnd"
         >
-          <svg width="14" height="16" viewBox="0 0 24 24" fill="#B9A98F">
+          <svg width="14" height="16" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="9" cy="5" r="1.7" />
             <circle cx="15" cy="5" r="1.7" />
             <circle cx="9" cy="12" r="1.7" />

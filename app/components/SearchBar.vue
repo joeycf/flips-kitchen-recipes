@@ -1,12 +1,12 @@
 <template>
   <div class="relative">
-    <span class="pointer-events-none absolute left-4 top-1/2 flex -translate-y-1/2">
+    <span class="pointer-events-none absolute left-4 top-1/2 flex -translate-y-1/2 text-ink-faint">
       <svg
         width="18"
         height="18"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#9C8E80"
+        stroke="currentColor"
         stroke-width="2"
         stroke-linecap="round"
       >

@@ -1,5 +1,5 @@
 <template>
-  <main class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-10">
+  <main id="main-content" tabindex="-1" class="relative z-10 mx-auto max-w-shell px-6 pb-24 pt-10">
     <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-clay">
@@ -31,12 +31,7 @@
       </NuxtLink>
     </div>
 
-    <div
-      v-if="pending"
-      class="rounded-card border border-line bg-paper p-8 text-center text-ink-soft"
-    >
-      Loading recipes…
-    </div>
+    <ListSkeleton v-if="pending" />
 
     <div
       v-else-if="error"
@@ -186,6 +181,8 @@
 </template>
 
 <script setup lang="ts">
+// Explicit import — components/admin/ is path-prefixed by Nuxt auto-import.
+import ListSkeleton from '~/components/admin/ListSkeleton.vue'
 import type { Database } from '~/types/database.types'
 
 definePageMeta({ layout: 'admin', middleware: 'auth' })
@@ -234,5 +231,5 @@ function formatDate(value: string) {
   })
 }
 
-useHead({ title: "Recipes · Admin · Flip's Kitchen" })
+useHead({ title: 'Recipes · Admin' })
 </script>

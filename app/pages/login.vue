@@ -1,5 +1,9 @@
 <template>
-  <main class="relative z-10 mx-auto flex max-w-sheet flex-col items-center px-6 pb-24 pt-16">
+  <main
+    id="main-content"
+    tabindex="-1"
+    class="relative z-10 mx-auto flex max-w-sheet flex-col items-center px-6 pb-24 pt-16"
+  >
     <div class="w-full max-w-[420px]">
       <div class="mb-7 text-center">
         <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-clay">
@@ -116,5 +120,5 @@ async function onSubmit() {
   // The watchEffect above navigates once the user ref updates.
 }
 
-useHead({ title: "Sign in · Flip's Kitchen" })
+useHead({ title: 'Sign in' })
 </script>

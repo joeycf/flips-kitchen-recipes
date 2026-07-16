@@ -19,9 +19,14 @@
 
   --color-ink: #2a241f;
   --color-ink-soft: #6f6257;
-  --color-ink-faint: #9c8e80;
+  /* Darkened from the design's #9c8e80 (2.9:1) to meet WCAG AA (4.5:1) on cream for the
+     small mono micro-labels this tier is used for. Same warm-taupe hue, just deeper. */
+  --color-ink-faint: #7b6d5e;
 
-  --color-clay: #bc5a39;
+  /* Deepened from the design's #bc5a39 so the terracotta accent clears AA as small text
+     on cream/paper (cuisine labels, links) AND as the background under white button text
+     — both were ~4.2:1 before. Still clearly lighter than clay-deep for hover states. */
+  --color-clay: #b35234;
   --color-clay-deep: #9e4a2e;
   --color-clay-tint: #f3e3d9;
 
@@ -46,7 +51,7 @@
   /* ---- Elevation ---- */
   --shadow-card: 0 1px 2px rgb(60 40 20 / 0.04), 0 16px 30px -22px rgb(90 50 20 / 0.22);
   --shadow-lift: 0 1px 2px rgb(60 40 20 / 0.05), 0 26px 44px -24px rgb(90 50 20 / 0.32);
-  --shadow-clay: 0 12px 24px -12px rgb(188 90 57 / 0.7);
+  --shadow-clay: 0 12px 24px -12px rgb(179 82 52 / 0.7);
 }
 
 /* Base page styling — mirrors the design export's global CSS. */
@@ -84,6 +89,51 @@
 
   p {
     text-wrap: pretty;
+  }
+
+  /*
+    Consistent, on-brand keyboard focus ring for every interactive control. Form fields
+    supply their own focus treatment (clay border + soft ring) and opt out via Tailwind's
+    `outline-none` (a utility-layer rule, which wins over this base rule); everything else
+    — links, buttons, chips, cards — gets this terracotta outline. The 2px offset keeps it
+    visible even on clay-filled buttons (it sits on the cream/paper behind them).
+  */
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+  }
+
+  /* The skip link moves focus here; it's a landmark, not a control, so no visible ring. */
+  #main-content:focus {
+    outline: none;
+  }
+}
+
+/*
+  Loading skeleton primitive — used where data is fetched client-side (the /admin list and
+  the edit form while a recipe loads). A gentle opacity pulse; stilled under reduced motion.
+*/
+@layer components {
+  .skeleton {
+    border-radius: 8px;
+    background-color: #ece3d3;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
   }
 }
 

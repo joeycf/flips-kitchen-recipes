@@ -41,7 +41,7 @@
       v-else
       type="button"
       class="flex h-full w-full flex-col items-center justify-center gap-2 px-3 text-center transition"
-      :class="dragOver ? 'bg-clay-tint text-clay' : 'bg-[#FFFDFA] text-ink-faint hover:bg-cream'"
+      :class="dragOver ? 'bg-clay-tint text-clay-deep' : 'bg-[#FFFDFA] text-ink-faint hover:bg-cream'"
       @click="picker?.click()"
     >
       <svg

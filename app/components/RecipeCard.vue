@@ -49,7 +49,7 @@
         {{ recipe.title }}
       </h3>
 
-      <p v-if="recipe.description" class="line-clamp-2 text-[13.5px] leading-snug text-[#8A7C6E]">
+      <p v-if="recipe.description" class="line-clamp-2 text-[13.5px] leading-snug text-ink-soft">
         {{ recipe.description }}
       </p>
 
@@ -68,13 +68,13 @@
         <span
           v-for="tag in shownTags"
           :key="tag"
-          class="flex-none rounded-pill bg-[#F1E8D8] px-2.5 py-1 text-[11px] font-medium text-[#7C6F5F]"
+          class="flex-none rounded-pill bg-[#F1E8D8] px-2.5 py-1 text-[11px] font-medium text-ink-soft"
         >
           {{ tag }}
         </span>
         <span
           v-if="extraTags > 0"
-          class="flex-none rounded-pill bg-clay-tint px-2.5 py-1 text-[11px] font-semibold text-clay"
+          class="flex-none rounded-pill bg-clay-tint px-2.5 py-1 text-[11px] font-semibold text-clay-deep"
         >
           +{{ extraTags }}
         </span>

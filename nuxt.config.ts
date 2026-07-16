@@ -33,7 +33,14 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: ['@nuxt/image', '@nuxt/eslint', '@nuxtjs/supabase'],
+  modules: [
+    '@nuxt/fonts',
+    '@nuxt/image',
+    '@nuxt/eslint',
+    '@nuxtjs/supabase',
+    '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
+  ],
 
   css: [
     '~/assets/css/main.css',
@@ -65,6 +72,51 @@ export default defineNuxtConfig({
     types: '~/types/database.types.ts',
   },
 
+  // Production origin for absolute SEO URLs (canonical, OG/Twitter images). Bound to the
+  // NUXT_PUBLIC_SITE_URL env var at runtime; when unset (local dev / an un-configured
+  // preview), app code falls back to the request origin. Set it in Vercel after the first
+  // deploy (docs/PLAYBOOK Phase 7B).
+  runtimeConfig: {
+    public: {
+      siteUrl: '',
+    },
+  },
+
+  // Consumed by @nuxtjs/sitemap + @nuxtjs/robots (via nuxt-site-config) to emit absolute
+  // <loc>s and the robots.txt `Sitemap:` line. Reads the same env var as siteUrl above at
+  // build time; falls back to the deploy URL the modules detect when it's absent.
+  site: {
+    url: process.env.NUXT_PUBLIC_SITE_URL,
+    name: "Flip's Kitchen",
+  },
+
+  // sitemap.xml — static pages are auto-discovered; recipe detail routes come from the
+  // dynamic source (server/api/__sitemap__/urls.ts, which pulls slugs from Supabase).
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+    exclude: ['/admin/**', '/login'],
+  },
+
+  // robots.txt — allow indexing, keep the admin area out of the index. @nuxtjs/robots
+  // appends the `Sitemap:` directive automatically using the site URL above, and honors
+  // the `robots: false` route rules below (X-Robots-Tag: noindex on the private routes).
+  robots: {
+    disallow: ['/admin'],
+  },
+
+  // Self-hosted fonts (@nuxt/fonts) — downloads Spectral / Work Sans / JetBrains Mono at
+  // build time and serves them locally with size-adjusted fallback metrics, removing the
+  // runtime Google Fonts request and the layout shift it caused. Weights mirror the former
+  // <link> (italic dropped — the design doesn't use it). Names come from the @theme font
+  // tokens in main.css, which resolve to these families via var(--font-*).
+  fonts: {
+    families: [
+      { name: 'Spectral', provider: 'google', weights: [400, 500, 600, 700] },
+      { name: 'Work Sans', provider: 'google', weights: [400, 500, 600, 700] },
+      { name: 'JetBrains Mono', provider: 'google', weights: [400, 500, 600] },
+    ],
+  },
+
   // Tailwind CSS v4 is wired in as a Vite plugin (no tailwind.config.js — the
   // theme lives in app/assets/css/main.css via @theme).
   vite: {
@@ -79,6 +131,12 @@ export default defineNuxtConfig({
 
     head: {
       htmlAttrs: { lang: 'en' },
+      meta: [
+        // Tints mobile browser chrome to match the cream header, for a seamless top edge.
+        { name: 'theme-color', content: '#faf4ea' },
+        // Stop iOS Safari auto-linking numbers (e.g. servings, minutes) as phone numbers.
+        { name: 'format-detection', content: 'telephone=no' },
+      ],
       script: [
         {
           innerHTML: MOTION_PRIME_SCRIPT,
@@ -89,13 +147,9 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        // Fonts referenced by the design tokens (Spectral / Work Sans / JetBrains Mono).
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap',
-        },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        // Spectral / Work Sans / JetBrains Mono are now self-hosted via @nuxt/fonts (see
+        // the `fonts` config above) — no external stylesheet or preconnect needed.
       ],
     },
   },
@@ -109,6 +163,10 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { isr: ISR_TTL_SECONDS },
     '/recipes/**': { isr: ISR_TTL_SECONDS },
-    '/admin/**': { ssr: false, prerender: false },
+    // Private, client-rendered admin area — never prerendered, and kept out of search
+    // indexes (`robots: false` → X-Robots-Tag: noindex, via @nuxtjs/robots).
+    '/admin/**': { ssr: false, prerender: false, robots: false },
+    // Public but not worth indexing (owner-only sign-in).
+    '/login': { robots: false },
   },
 })

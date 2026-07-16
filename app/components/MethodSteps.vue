@@ -2,7 +2,7 @@
   <ol class="flex flex-col gap-[22px]">
     <li v-for="(step, i) in steps" :key="i" class="flex gap-4">
       <div
-        class="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] bg-clay-tint font-display text-[17px] font-semibold text-clay"
+        class="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] bg-clay-tint font-display text-[17px] font-semibold text-clay-deep"
       >
         {{ i + 1 }}
       </div>

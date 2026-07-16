@@ -17,7 +17,7 @@
       </svg>
     </div>
     <h2 class="font-display text-[24px] font-semibold text-ink">Nothing matches that search</h2>
-    <p class="mt-2.5 text-[15px] leading-relaxed text-[#8A7C6E]">
+    <p class="mt-2.5 text-[15px] leading-relaxed text-ink-soft">
       Try a different ingredient or clear the filters to see the whole collection.
     </p>
     <button
