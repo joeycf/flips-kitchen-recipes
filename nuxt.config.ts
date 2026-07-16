@@ -40,6 +40,9 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@nuxtjs/sitemap',
     '@nuxtjs/robots',
+    // Vercel Web Analytics — injects the tracking script and reports page views. Only
+    // active on the deployed site; a no-op locally (VERCEL_* env absent).
+    '@vercel/analytics/nuxt',
   ],
 
   css: [

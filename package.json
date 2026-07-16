@@ -25,6 +25,7 @@
     "@nuxtjs/robots": "^6.1.2",
     "@nuxtjs/sitemap": "^8.2.2",
     "@nuxtjs/supabase": "^2.0.9",
+    "@vercel/analytics": "^2.0.1",
     "animejs": "^4.5.0",
     "fuse.js": "^7.5.0",
     "lite-youtube-embed": "^0.3.4",
@@ -40,5 +41,10 @@
     "tailwindcss": "~4.3.2",
     "typescript": "~5.9.3",
     "vue-tsc": "^3.3.7"
+  },
+  "overrides": {
+    "@vercel/analytics": {
+      "vue-router": "5"
+    }
   }
 }
