@@ -1,6 +1,6 @@
 # Recipe Website — Build Playbook
 
-> **Status:** Phase 3 complete (public list + detail pages, cook mode, print, seed; verified on dev + vercel build). **Phase 4 (search & filtering) prompt ready — see below.**
+> **Status:** Phase 4 complete (client-side search + filter chips, URL sync, No-results state; verified). **Phase 5 (admin mode) prompt ready — see below.**
 > **Last updated:** 2026-07-15 · **Pins:** Node 24+ · Nuxt 4.4.8 · Tailwind 4.3.2 · anime.js 4.5.0 · TypeScript 5.9.3 (do not bump)
 
 A personal, searchable, ingredient-filterable recipe site with an admin mode for
@@ -386,16 +386,72 @@ are no hydration warnings.
 ### Phase 5 — Admin mode (auth + CRUD + uploads)
 
 ```
-Build the admin section behind Supabase auth. Add a /login page and protect /admin with route
-middleware (redirect if not authenticated). Build a recipe create/edit form matching the admin
-layout in design/: title, description, a searchable cuisine autocomplete (type to filter a list
-of ~50 world cuisines, current pick check-marked, non-matching entries kept as a custom
-cuisine), tags input, YouTube URL field, reorderable ingredient rows (quantity / unit / name,
-auto-deriving name_key), reorderable instruction steps, and image upload to the recipe-images
-Storage bucket with live previews (hero + gallery). Wire full create / read / update / delete
-against Supabase. On save, trigger revalidation of the affected ISR routes (or document the ISR
-TTL so I know when changes go live).
+PHASE 5 — Admin mode: login, protected /admin, create/edit form, image upload, CRUD
+
+First phase with write access: you log in as the admin user (from Phase 2) and create/edit/delete
+recipes through the UI. Implement the admin layouts from design/.
+
+AUTH & PROTECTION
+- Keep @nuxtjs/supabase redirect:false (public site stays ungated). Protect ONLY /admin: add a
+  route middleware (or an admin layout with middleware) that checks useSupabaseUser() and
+  redirects unauthenticated users to /login, preserving the intended destination to return to
+  after login.
+- /login page: email + password via supabase.auth.signInWithPassword; clear error on bad
+  credentials; on success go to the intended /admin page.
+- Logout control in the admin UI (supabase.auth.signOut → redirect home).
+- Security note: RLS allows writes for ANY authenticated user; disabled sign-ups + anonymous-off
+  are what limit that to you. OPTIONAL hardening: scope write policies to your admin UID
+  (auth.uid() = '<uid>') via a follow-up migration (get the UID from Authentication → Users).
+
+ADMIN LIST (/admin)
+- List existing recipes (title, cuisine, updated date) with Edit + Delete, plus a "New recipe"
+  button (matches the design header). Delete confirms first; the FK is ON DELETE CASCADE so
+  ingredients go automatically. Optionally also delete that recipe's Storage images to avoid orphans.
+
+CREATE / EDIT FORM (matches design/ admin form)
+- Fields: title, description, cuisine (searchable autocomplete over ~50 world cuisines, current
+  pick check-marked, custom entries allowed → writes the cuisine column), tags input, YouTube URL,
+  prep/cook minutes, servings, difficulty.
+- Ingredients: dynamic, reorderable rows (quantity / unit / name). Derive name_key from name
+  (lowercase + trim) on save; allow manual edit if wanted. Keep position.
+- Steps: reorderable ordered text steps (instructions JSONB). Per-step image optional (schema
+  supports { text, image? }) — do text + reordering now; add per-step image only if straightforward.
+- Tags UX: make it easy to apply the curated chip terms (vegetarian, spicy, quick, seafood,
+  noodles) as quick-add suggestions, so those filter chips light up.
+- Slug: auto-generate from title (lowercase, hyphenate, strip punctuation) with uniqueness handling
+  (suffix on collision). On EDIT, keep the existing slug stable by default (changing it breaks links).
+
+IMAGES (Supabase Storage: recipe-images)
+- Hero + gallery upload via supabase.storage.from('recipe-images').upload(...), unique object paths
+  (e.g. `${slug}/${uuid}-${filename}`), then store the getPublicUrl result in hero_image / gallery.
+  Preview before and after upload. Optionally downscale/compress large images client-side first.
+  (@nuxt/image is already configured for the Supabase domain from Phase 3.)
+
+PERSISTENCE (CRUD)
+- Create: insert recipe row, then insert recipe_ingredients (position + name_key).
+- Edit: load recipe + ingredients into the form; on save, update the recipe row and reconcile
+  ingredients by deleting existing rows and re-inserting from the form (simplest correct approach
+  for small counts).
+- Delete: delete recipe (ingredients cascade), confirm first.
+- Show errors visibly; validate required fields (at least title).
+
+CHIP-MATCH REFINEMENT (so real data filters well)
+- Refine the useRecipeSearch chip predicate so a chip matches when its term appears as a WORD
+  within any ingredient name (not only as an exact name_key), so "Chicken" catches "chicken thighs".
+  Keep the tags-or-ingredients union and the OR/AND combine constant.
+
+FRESHNESS
+- Public pages are ISR-cached, so admin edits appear after the revalidation window. Document the
+  TTL. On-demand revalidation is an optional later upgrade.
+
+VERIFY: typecheck, lint, vercel-preset build pass. Then (with your real Supabase project): admin
+login works and bad credentials error; /admin redirects to /login when logged out; creating a
+recipe with an uploaded image makes it appear on the public grid + detail page; editing updates it;
+deleting removes it; and the refined chips match real multi-word ingredients.
 ```
+
+**After Phase 5:** the seed is no longer needed — you enter real recipes through the form. Consider
+deleting the seed rows (the delete snippet in supabase/seed.sql) once you have your own.
 
 ### Phase 6 — Animations with anime.js
 

@@ -30,9 +30,9 @@ export interface InstructionStep {
 
 // --- Card read shape --------------------------------------------------------
 
-// The trimmed column set the home grid needs — no heavy jsonb/ingredient joins.
-// Matches the select in `useRecipes`; widen both together when Phase 4 adds the
-// ingredient filter (e.g. joining `recipe_ingredients(name_key)`).
+// The trimmed shape the home grid + client-side filtering need: card columns plus
+// each recipe's ingredient `name_key`s (only) for the ingredient filter — no heavy
+// jsonb or full ingredient rows. Matches the select in `useRecipes`.
 export type RecipeCardData = Pick<
   Recipe,
   | 'id'
@@ -45,7 +45,9 @@ export type RecipeCardData = Pick<
   | 'cook_minutes'
   | 'difficulty'
   | 'tags'
->
+> & {
+  recipe_ingredients: Pick<RecipeIngredient, 'name_key'>[]
+}
 
 // --- Joined read shape ------------------------------------------------------
 

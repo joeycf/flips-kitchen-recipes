@@ -15,26 +15,42 @@
       </p>
     </header>
 
-    <!-- Phase 4 adds the search bar + ingredient filter chips here, over the same fetch. -->
-
     <div v-if="error" class="rounded-card border border-line bg-paper p-8 text-center">
       <p class="text-ink-soft">Something went wrong loading the recipes. Please try again.</p>
     </div>
 
+    <!-- Empty DB — distinct from the "no matches" state below. -->
     <EmptyState v-else-if="!recipes || recipes.length === 0" />
 
     <template v-else>
+      <div class="mb-[18px]">
+        <SearchBar v-model="search" />
+      </div>
+
+      <FilterChips
+        v-model="selectedChips"
+        :chips="chips"
+        :has-active-filters="hasActiveFilters"
+        @clear="clearFilters"
+      />
+
       <p class="mb-4 text-[14px] text-[#8A7C6E]">
-        <b class="font-semibold text-ink">{{ recipes.length }}</b>
-        {{ recipes.length === 1 ? 'recipe' : 'recipes' }}
+        <b class="font-semibold text-ink">{{ resultCount }}</b>
+        {{ resultCount === 1 ? 'recipe' : 'recipes' }}
       </p>
-      <RecipeGrid :recipes="recipes" />
+
+      <NoResultsState v-if="showNoResults" @clear="clearFilters" />
+      <RecipeGrid v-else :recipes="filtered" />
     </template>
   </main>
 </template>
 
 <script setup lang="ts">
 const { data: recipes, error } = await useRecipes()
+
+// Client-side fuzzy search + chip filtering over the loaded list, synced to the URL.
+const { search, selectedChips, chips, filtered, resultCount, hasActiveFilters, showNoResults, clearFilters } =
+  useRecipeSearch(recipes)
 
 useSeoMeta({
   title: "Flip's Kitchen — family recipes",

@@ -7,14 +7,13 @@ export function useRecipes() {
   const supabase = useSupabaseClient<Database>()
 
   return useAsyncData('recipes:list', async () => {
-    // Card fields only — no jsonb/ingredient joins. Phase 4 will extend this select
-    // (e.g. add `, recipe_ingredients(name_key)`) to power the ingredient filter;
-    // widen RecipeCardData alongside it. Keeping the string literal inline preserves
-    // Supabase's row-type inference.
+    // Card fields plus each recipe's ingredient name_keys (lightweight — no full
+    // ingredient rows or jsonb) to power the client-side ingredient filter. Keeping
+    // the string literal inline preserves Supabase's row-type inference.
     const { data, error } = await supabase
       .from('recipes')
       .select(
-        'id, slug, title, description, cuisine, hero_image, prep_minutes, cook_minutes, difficulty, tags',
+        'id, slug, title, description, cuisine, hero_image, prep_minutes, cook_minutes, difficulty, tags, recipe_ingredients(name_key)',
       )
       .order('created_at', { ascending: false })
 
